@@ -1,0 +1,581 @@
+\documentclass[12pt,a4paper]{article}
+
+% -------------------------
+% PAQUETES
+% -------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{enumitem}
+
+\geometry{
+    margin=2.5cm
+}
+
+% -------------------------
+% DATOS
+% -------------------------
+\title{Modelos y Sistemas\\
+Primer Parcial}
+\author{}
+\date{}
+
+% -------------------------
+% DOCUMENTO
+% -------------------------
+\begin{document}
+
+\maketitle
+
+\section*{Ejercicio 1}
+
+Consideramos un sistema masa-resorte-amortiguador con:
+
+\[
+m = 7\,kg
+\]
+
+\[
+c = 2100\,\frac{Ns}{m}
+\]
+
+\[
+k = 630\,\frac{N}{m}
+\]
+
+y condiciones iniciales:
+
+\[
+y(0)=1\,m
+\]
+
+\[
+\dot{y}(0)=0.21\,\frac{m}{s}
+\]
+
+\subsection*{a) Ecuación diferencial}
+
+La ecuación del sistema es:
+
+\[
+m\ddot{y}(t)+c\dot{y}(t)+ky(t)=u(t)
+\]
+
+Reemplazando los valores:
+
+\[
+7\ddot{y}(t)+2100\dot{y}(t)+630y(t)=u(t)
+\]
+
+\subsection*{b) Representación en espacio de estados}
+
+Definimos las variables de estado:
+
+\[
+x_1(t)=y(t)
+\]
+
+\[
+x_2(t)=\dot{y}(t)
+\]
+
+Entonces:
+
+\[
+\dot{x}_1=x_2
+\]
+
+A partir de la ecuación diferencial:
+
+\[
+7\ddot{y}+2100\dot{y}+630y=u
+\]
+
+obtenemos:
+
+\[
+\ddot{y}
+=
+-\frac{2100}{7}\dot{y}
+-\frac{630}{7}y
++\frac{1}{7}u
+\]
+
+por lo tanto:
+
+\[
+\dot{x}_2
+=
+-300x_2-90x_1+\frac{1}{7}u
+\]
+
+La representación matricial queda:
+
+\[
+\begin{bmatrix}
+\dot{x}_1\\
+\dot{x}_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & 1\\
+-90 & -300
+\end{bmatrix}
+\begin{bmatrix}
+x_1\\
+x_2
+\end{bmatrix}
++
+\begin{bmatrix}
+0\\
+\frac{1}{7}
+\end{bmatrix}u
+\]
+
+\subsection*{c) Polinomio característico y solución general}
+
+El polinomio característico se obtiene de:
+
+\[
+\det(sI-A)=0
+\]
+
+con
+
+\[
+A=
+\begin{bmatrix}
+0 & 1\\
+-90 & -300
+\end{bmatrix}
+\]
+
+Entonces:
+
+\[
+\begin{vmatrix}
+s & -1\\
+90 & s+300
+\end{vmatrix}
+=0
+\]
+
+por lo que:
+
+\[
+s(s+300)+90=0
+\]
+
+\[
+s^2+300s+90=0
+\]
+
+Las raíces son:
+
+\[
+s_{1,2}
+=
+\frac{-300\pm\sqrt{300^2-4(90)}}{2}
+\]
+
+Por lo tanto, la solución general es de la forma:
+
+\[
+y(t)=C_1e^{s_1t}+C_2e^{s_2t}
+\]
+
+Las constantes se determinan utilizando las condiciones iniciales.
+
+\subsection*{d) Matriz de transición de estados}
+
+La matriz de transición de estados se obtiene como:
+
+\[
+\Phi(t)=e^{At}
+\]
+
+donde $A$ es la matriz del sistema.
+
+También puede calcularse mediante la transformada de Laplace:
+
+\[
+\Phi(t)
+=
+\mathcal{L}^{-1}
+\left\{
+(sI-A)^{-1}
+\right\}
+\]
+
+\newpage
+
+% =====================================================
+% EJERCICIO 2
+% =====================================================
+
+\section*{Ejercicio 2}
+
+Se tiene el sistema:
+
+\[
+\ddot{y}(t)+8\dot{y}(t)+7y(t)=u(t)
+\]
+
+\subsection*{a) Función transferencia}
+
+Aplicando transformada de Laplace y considerando condiciones iniciales nulas:
+
+\[
+s^2Y(s)+8sY(s)+7Y(s)=U(s)
+\]
+
+Factorizando:
+
+\[
+Y(s)(s^2+8s+7)=U(s)
+\]
+
+Por definición:
+
+\[
+H(s)=\frac{Y(s)}{U(s)}
+\]
+
+entonces:
+
+\[
+\boxed{
+H(s)=\frac{1}{s^2+8s+7}
+}
+\]
+
+Factorizando el denominador:
+
+\[
+s^2+8s+7=(s+1)(s+7)
+\]
+
+por lo tanto:
+
+\[
+\boxed{
+H(s)=\frac{1}{(s+1)(s+7)}
+}
+\]
+
+\subsection*{b) Respuesta al impulso}
+
+Para una entrada impulso:
+
+\[
+u(t)=\delta(t)
+\]
+
+su transformada es:
+
+\[
+U(s)=1
+\]
+
+Entonces:
+
+\[
+Y(s)=H(s)
+\]
+
+por lo tanto:
+
+\[
+Y(s)=\frac{1}{(s+1)(s+7)}
+\]
+
+Realizamos fracciones simples:
+
+\[
+\frac{1}{(s+1)(s+7)}
+=
+\frac{A}{s+1}+\frac{B}{s+7}
+\]
+
+De donde:
+
+\[
+A=\frac{1}{6},
+\qquad
+B=-\frac{1}{6}
+\]
+
+Entonces:
+
+\[
+Y(s)
+=
+\frac{1}{6}\frac{1}{s+1}
+-
+\frac{1}{6}\frac{1}{s+7}
+\]
+
+Aplicando transformada inversa:
+
+\[
+\boxed{
+h(t)=
+\frac{1}{6}e^{-t}
+-
+\frac{1}{6}e^{-7t}
+}
+\]
+
+\subsection*{c) Respuesta al escalón}
+
+Para una entrada escalón:
+
+\[
+u(t)=1(t)
+\]
+
+su transformada es:
+
+\[
+U(s)=\frac{1}{s}
+\]
+
+Entonces:
+
+\[
+Y(s)=H(s)U(s)
+\]
+
+\[
+Y(s)
+=
+\frac{1}{s(s+1)(s+7)}
+\]
+
+Realizamos fracciones simples:
+
+\[
+\frac{1}{s(s+1)(s+7)}
+=
+\frac{A}{s}
++
+\frac{B}{s+1}
++
+\frac{C}{s+7}
+\]
+
+Obtenemos:
+
+\[
+A=\frac{1}{7},
+\qquad
+B=-\frac{1}{6},
+\qquad
+C=\frac{1}{42}
+\]
+
+Por lo tanto:
+
+\[
+Y(s)
+=
+\frac{1}{7s}
+-
+\frac{1}{6(s+1)}
++
+\frac{1}{42(s+7)}
+\]
+
+Aplicando transformada inversa:
+
+\[
+\boxed{
+y(t)
+=
+\frac{1}{7}
+-
+\frac{1}{6}e^{-t}
++
+\frac{1}{42}e^{-7t}
+}
+\]
+
+\newpage
+
+% =====================================================
+% CONCEPTOS TEÓRICOS
+% =====================================================
+
+\section*{Conceptos importantes}
+
+\subsection*{Función transferencia}
+
+La función transferencia se define como:
+
+\[
+\boxed{
+H(s)=\frac{Y(s)}{X(s)}
+}
+\]
+
+considerando condiciones iniciales nulas.
+
+\subsection*{Respuesta al impulso}
+
+Si la entrada es:
+
+\[
+x(t)=\delta(t)
+\]
+
+entonces:
+
+\[
+X(s)=1
+\]
+
+y por lo tanto:
+
+\[
+Y(s)=H(s)
+\]
+
+La respuesta al impulso es:
+
+\[
+\boxed{
+h(t)=\mathcal{L}^{-1}\{H(s)\}
+}
+\]
+
+\subsection*{Convolución}
+
+Para un sistema LTI:
+
+\[
+\boxed{
+y(t)=
+\int_{-\infty}^{\infty}
+x(\sigma)h(t-\sigma)\,d\sigma
+}
+\]
+
+En Laplace:
+
+\[
+\boxed{
+Y(s)=H(s)X(s)
+}
+\]
+
+\subsection*{Realimentación negativa}
+
+Para el esquema general:
+
+\[
+\boxed{
+\frac{Y(s)}{X(s)}
+=
+\frac{G_1}{1+G_1G_2}
+}
+\]
+
+\subsection*{Circuito RC pasabajo}
+
+La función transferencia es:
+
+\[
+\boxed{
+H(s)=\frac{1}{1+sRC}
+}
+\]
+
+\subsection*{Teorema del valor inicial}
+
+\[
+\boxed{
+y(0)=
+\lim_{s\rightarrow\infty}sY(s)
+}
+\]
+
+\subsection*{Teorema del valor final}
+
+\[
+\boxed{
+y(\infty)=
+\lim_{s\rightarrow0}sY(s)
+}
+\]
+
+siempre que se cumplan las condiciones de estabilidad.
+
+\subsection*{Entradas típicas}
+
+Impulso:
+
+\[
+\delta(t)
+\quad\longleftrightarrow\quad
+1
+\]
+
+Escalón:
+
+\[
+1(t)
+\quad\longleftrightarrow\quad
+\frac{1}{s}
+\]
+
+Rampa:
+
+\[
+t
+\quad\longleftrightarrow\quad
+\frac{1}{s^2}
+\]
+
+Sinusoidal:
+
+\[
+\sin(\omega_0t)
+\quad\longleftrightarrow\quad
+\frac{\omega_0}{s^2+\omega_0^2}
+\]
+
+Exponencial:
+
+\[
+e^{at}
+\quad\longleftrightarrow\quad
+\frac{1}{s-a}
+\]
+
+\subsection*{Diagrama de Bode}
+
+La magnitud de la función transferencia en decibeles es:
+
+\[
+\boxed{
+|H(j\omega)|_{dB}
+=
+20\log |H(j\omega)|
+}
+\]
+
+Los parámetros importantes son:
+
+\begin{itemize}
+    \item Magnitud.
+    \item Fase.
+    \item Frecuencia de corte.
+    \item Ancho de banda.
+    \item Resonancia.
+\end{itemize}
+
+\end{document}
