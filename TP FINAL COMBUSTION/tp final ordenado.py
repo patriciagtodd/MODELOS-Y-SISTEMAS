@@ -159,3 +159,84 @@ for a in ax:
     a.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
+
+# %%
+
+"""Figuras y numeros extra del TP Final: error NL vs lineal, CI lejana, horizonte largo."""
+import numpy as np, matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+k0, ER, q = 10**4, 5000, 100
+h, Ta, alfa, beta = 0.5, 300, 0.1, 10
+xe = np.array([0., 300., 300.])
+kTa = k0*np.exp(-ER/Ta)
+A = np.array([[-kTa, 0, 0], [q*kTa, -h, 0], [beta, alfa, -alfa]])
+
+def nl(t, x):
+    Y, T, z = x
+    r = k0*np.exp(-ER/T)*Y
+    return [-r, q*r - h*(T-Ta), alfa*(T-z) + beta*Y]
+lin = lambda t, dx: A @ dx
+
+def simular(x0, tf, N=5000, method='LSODA'):
+    t = np.linspace(0, tf, N)
+    a = solve_ivp(nl, [0, tf], x0, t_eval=t, method=method, rtol=1e-9, atol=1e-11)
+    b = solve_ivp(lin, [0, tf], np.array(x0)-xe, t_eval=t, method=method, rtol=1e-9, atol=1e-11)
+    return t, a.y, b.y + xe[:, None]
+
+X0 = np.array([[1,300,300],[0.1,301,301],[1,350,300],[0.5,300,300],[1,300,320]], float)
+col = ['blue','red','green','orange','purple']
+lab = [f'CI {i+1}' for i in range(5)]
+nom = ['Y', 'T [K]', 'z [K]']
+
+# ---- Error NL vs lineal (CI 1-5), 0-100 s
+t, errs = None, []
+for x0 in X0:
+    t, a, b = simular(x0, 100)
+    errs.append(np.abs(a-b))
+    print('maxerr', x0, ['%.2e' % e for e in np.abs(a-b).max(axis=1)])
+fig, ax = plt.subplots(3, 1, sharex=True, figsize=(7, 5))
+for k in range(3):
+    for i, e in enumerate(errs):
+        ax[k].semilogy(t, e[k]+1e-16, color=col[i], lw=1.3, label=lab[i])
+    ax[k].set_ylabel(f'|Δ{nom[k]}|'); ax[k].grid(True, alpha=.3)
+    ax[k].set_ylim(1e-10, 1e2)
+ax[2].set_xlabel('Tiempo [s]'); ax[0].legend(ncol=5, fontsize=8, loc='upper right')
+fig.tight_layout(); fig.savefig('fig_error.png', dpi=200); plt.close(fig)
+
+# ---- CI lejana: T0 = 600 K
+for T0 in (500, 600):
+    x0 = [1, T0, 300]
+    t, a, b = simular(x0, 20, method='Radau')
+    print('T0', T0, 'NL Tmax %.1f' % a[1].max(), 'Y(20)=%.3e' % a[0,-1], 'lin Tmax %.1f' % b[1].max(), 'lin Y(20)=%.4f' % b[0,-1])
+x0 = [1, 600, 300]
+t, a, b = simular(x0, 20, method='Radau')
+fig, ax = plt.subplots(3, 1, sharex=True, figsize=(7, 4.8))
+for k in range(3):
+    ax[k].plot(t, a[k], 'k', lw=1.6, label='No lineal')
+    ax[k].plot(t, b[k], 'r--', lw=1.6, label='Linealizado')
+    ax[k].set_ylabel(nom[k]); ax[k].grid(True, alpha=.3)
+ax[0].legend(); ax[2].set_xlabel('Tiempo [s]')
+fig.tight_layout(); fig.savefig('fig_lejana.png', dpi=200); plt.close(fig)
+
+# ---- Horizonte largo: 0-8000 s (CI 1, 3, 4)
+t, ys = None, {}
+fig, ax = plt.subplots(3, 2, sharex=True, figsize=(9, 5.8))
+for j, (nombre, idx) in enumerate([('No lineal', 0), ('Linealizado', 1)]):
+    for i in (0, 2, 3):
+        t, a, b = simular(X0[i], 8000, N=8000)
+        s = (a, b)[idx]
+        for k in range(3):
+            ax[k, j].plot(t, s[k], color=col[i], lw=1.3, label=lab[i])
+    ax[0, j].set_title(nombre); ax[2, j].set_xlabel('Tiempo [s]')
+for k in range(3):
+    ax[k, 0].set_ylabel(nom[k])
+    for j in range(2): ax[k, j].grid(True, alpha=.3)
+ax[0, 0].legend(fontsize=8)
+fig.tight_layout(); fig.savefig('fig_largo.png', dpi=200); plt.close(fig)
+for i in (0,2,3):
+    t,a,b = simular(X0[i], 8000, N=8000)
+    print('CI',i+1,'t=8000 NL',a[:,-1],'lin',b[:,-1],'maxz NL %.2f at t=%.0f'%(a[2].max(), t[a[2].argmax()]))
+print('kTa',kTa,'tau_Y',1/kTa)
