@@ -19,7 +19,7 @@ Orden del archivo :
     1. Parámetros, condiciones iniciales y horizontes
     2. Modelo no lineal
     3. Equilibrio, Jacobiano y estabilidad
-    4. Modelo linealizado (+ chequeo con la solución analítica)
+    4. Modelo linealizado 
     5. Simulaciones: diagramas de fase 3D y soluciones temporales (200 s y 1000 s)
     6. Error entre modelos
     7. Horizonte largo (8000 s)
