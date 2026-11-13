@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{graphicx,amsmath,amssymb,geometry,fancyhdr,xcolor,hyperref,booktabs,float}
+\geometry{left=1.9cm,right=1.9cm,top=3cm,headheight=50pt,headsep=5pt,bottom=2.6cm}
+\hypersetup{colorlinks=true,urlcolor=blue,linkcolor=blue}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\includegraphics[height=.3in]{images/logo.jpg}\\[-1pt]\fontsize{7}{9}\selectfont Modelo reducido de combustión: análisis no lineal y linealizado\\Aragón, Cano y González Todd}
+\fancyhead[R]{\fontsize{7}{9}\selectfont Noviembre, 2026}
+\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{.4pt}
+\newcommand{\e}{\mathrm{e}}
+\title{Modelo reducido de combustión: análisis no lineal y linealizado}
+\author{Bernardita Aragón \and Aylin Cano \and Patricia Alejandra González Todd}
+\date{Noviembre 2026}
+\begin{document}
+\begin{titlepage}\thispagestyle{empty}\vspace*{1cm}\includegraphics[width=.45\textwidth]{images/logo.jpg}
+\begin{center}\vspace{1.5cm}{\Large\bfseries MODELOS Y SISTEMAS}\\[.3cm]{\large TRABAJO FINAL}\\[2cm]
+{\LARGE\bfseries Modelo reducido de combustión: análisis no lineal y linealizado}\\[2cm]
+{\large \textbf{Autores:}\\Bernardita Aragón\\Aylin Cano\\Patricia Alejandra González Todd}\\[.6cm]
+\textbf{Docentes:}\\Guillermo Mario La Mura\\Diana Rubio\\Paula Romina Soria\\[1.5cm]\vfill{\large Noviembre 2026}\end{center}\end{titlepage}
+\pagestyle{fancy}
+\begin{center}{\fontsize{12}{14}\selectfont Modelo reducido de combustión: análisis no lineal y linealizado\par}\vspace{.6cm}
+{\fontsize{11}{13}\selectfont Aragón, Bernardita; Cano, Aylin; González Todd, Patricia Alejandra\par}\vspace{.3cm}
+{\itshape\fontsize{10}{13}\selectfont Escuela de Ciencia y Tecnología, Universidad Nacional de San Martín,\\25 de Mayo y Francia, 1650 San Martín, Buenos Aires, Argentina\\
+\href{mailto:baragon@estudiantes.unsam.edu.ar}{baragon@estudiantes.unsam.edu.ar},
+\href{mailto:acano@estudiantes.unsam.edu.ar}{acano@estudiantes.unsam.edu.ar},
+\href{mailto:pgonzaleztodd@estudiantes.unsam.edu.ar}{pgonzaleztodd@estudiantes.unsam.edu.ar}\par}\end{center}
+{\fontsize{10}{10}\selectfont\textbf{Resumen:} Se analiza un modelo reducido de combustión de tres estados (fracción de reactivo, temperatura y una variable auxiliar de temperatura) con cinética de Arrhenius. Su único equilibrio es $(0,300,300)$ y la matriz linealizada tiene autovalores reales negativos $(-5.78\cdot10^{-4},-0.5,-0.1)$, por lo que es localmente asintóticamente estable. Se comparan ambos modelos en cinco condiciones iniciales y horizontes de hasta 8000 s. Se agrega una entrada térmica y se obtiene la función de transferencia, junto con sus respuestas al escalón y al impulso.\\Palabras claves: \textit{\textbf{combustión, linealización, estabilidad, función de transferencia}}}
+\section{Introducción}
+Se estudia un modelo reducido de combustión de tres estados que describe la conversión de un reactivo en un medio con intercambio de calor con el ambiente. Las variables son $Y$ (adimensional), fracción de reactivo sin quemar; $T$ [K], temperatura de la zona de reacción; y $z$ [K], variable auxiliar de temperatura que relaja hacia $T$ y es forzada por $Y$. Al inicio $Y=1$ representa el reactivo sin quemar y $Y=0$ el reactivo agotado.
+La velocidad de reacción sigue una ley de Arrhenius. La reacción libera calor en proporción a su velocidad y es sensible a la temperatura; el medio pierde calor por convección hacia la temperatura ambiente $T_a$. El modelo y sus parámetros corresponden al enunciado del trabajo final de la cátedra https://github.com/patriciagtodd/MODELOS-Y-SISTEMAS/blob/main/TP%20FINAL%20COMBUSTION/13-%20Modelo%20reducido%20de%20combusti%C2%B4on.pdf 
+Los objetivos son calcular el equilibrio y simular el sistema no lineal, linealizarlo y analizar su estabilidad, comparar ambos modelos con las mismas condiciones iniciales y obtener la función de transferencia ante una entrada térmica y sus respuestas. La sección 2 presenta los métodos, la 3 los experimentos, la 4 el análisis y la 5 las conclusiones. Código fuente: \url{https://github.com/patriciagtodd/MODELOS-Y-SISTEMAS/blob/main/TP\%20FINAL\%20COMBUSTION/tp_final_combusti\%C3\%B3n.py}.
+\section{Materiales y Métodos}
+Se usan el cálculo de puntos de equilibrio, la linealización mediante el Jacobiano (método indirecto de Lyapunov \cite{Khalil}), la matriz de transición de estados $\Phi(t)=e^{At}$ y la función de transferencia \cite{Ogata}.
+\subsection{Ecuaciones del modelo no lineal}
+Con $x=(Y,T,z)^\mathsf{T}$, el modelo autónomo es
+\begin{equation}\label{eq:system}
+\begin{cases}
+\dot{Y}=-k(T)Y,\\
+\dot{T}=q\,k(T)Y-h(T-T_a),\\
+\dot{z}=\alpha(T-z)+\beta Y,
+\end{cases}
+\qquad k(T)=k_0\e^{-E_R/T}.
+\end{equation}
+La reacción consume $Y$ y libera calor proporcional a la velocidad $k(T)Y$; $h$ es el coeficiente de enfriamiento, $\alpha$ determina cómo $z$ sigue a $T$ y $\beta$ es la ganancia con que $Y$ fuerza a $z$. La única no linealidad es el producto $k(T)Y$.
+\subsection{Puntos de equilibrio y sistema linealizado}
+En equilibrio, $k(T)>0$ para $T>0$, así que $\dot Y=0$ implica $Y_e=0$. Luego $\dot T=0$ da $T_e=T_a=300$ K y $\dot z=0$ da $z_e=T_e$. Por tanto,
+\[
+x_e=\begin{bmatrix}0\\300\\300\end{bmatrix}.
+\]
+El Jacobiano de $f$ respecto de $x$ es
+\begin{equation}
+J(Y,T,z)=\begin{bmatrix}
+-k(T)&-\dfrac{E_R}{T^2}k(T)Y&0\\
+qk(T)&q\dfrac{E_R}{T^2}k(T)Y-h&0\\
+\beta&\alpha&-\alpha
+\end{bmatrix}.
+\end{equation}
+Definiendo $a=k(T_a)=k_0\e^{-E_R/T_a}=5.78\cdot10^{-4}\ {\rm s}^{-1}$, su evaluación en el equilibrio es
+\[
+A=J(x_e)=\begin{bmatrix}-a&0&0\\qa&-h&0\\\beta&\alpha&-\alpha\end{bmatrix}
+=\begin{bmatrix}-5.78\cdot10^{-4}&0&0\\0.0578&-0.5&0\\10&0.1&-0.1\end{bmatrix}.
+\]
+En desviaciones $\delta x=x-x_e$, el modelo linealizado es $\delta\dot{x}=A\delta x$ y $x(t)\approx x_e+\delta x(t)$. La aproximación de la primera ecuación reemplaza $-k(T)Y$ por $-aY$; el residuo no lineal es $-[k(T)-a]Y$.
+Como $A$ es triangular inferior, sus autovalores son
+\[
+\lambda_1=-a=-5.78\cdot10^{-4},\quad\lambda_2=-h=-0.5,\quad
+\lambda_3=-\alpha=-0.1\ {\rm s}^{-1}.
+\]
+Todos son negativos, por lo que $x_e$ es localmente asintóticamente estable. Las constantes de tiempo correspondientes son aproximadamente $1731$, $2$ y $10$ s; la combustión es mucho más lenta que la dinámica térmica.
+\subsection{Solución analítica del sistema linealizado}
+La solución es $\delta x(t)=e^{At}\delta x_0$, donde $e^{At}=Ve^{\Lambda t}V^{-1}$. Con $\delta x_0=(\delta Y_0,\delta T_0,\delta z_0)^\mathsf{T}$ y valores redondeados:
+\begin{align*}
+\delta Y(t)&=\delta Y_0e^{-at},\\
+\delta T(t)&=\delta Y_0\frac{qa}{h-a}(e^{-at}-e^{-ht})+\delta T_0e^{-ht},\\
+\delta z(t)&=\delta Y_0(100.70e^{-at}-100.73e^{-\alpha t}+0.029e^{-ht})\\
+&\quad+\delta T_0\frac{\alpha}{h-\alpha}(e^{-\alpha t}-e^{-ht})+\delta z_0e^{-\alpha t}.
+\end{align*}
+Cada estado es combinación de exponenciales decrecientes; a tiempos largos domina el modo lento $e^{-at}$.
+\subsection{Función de transferencia}
+Se agrega una entrada térmica $u(t)$ [K/s] a la ecuación de temperatura y se toma como salida $y=\delta T=T-T_a$:
+\[
+\delta\dot{x}=A\delta x+Bu,\quad y=C\delta x,\quad
+B=\begin{bmatrix}0\\1\\0\end{bmatrix},\quad C=\begin{bmatrix}0&1&0\end{bmatrix},\quad D=0.
+\]
+A partir de $H(s)=C(sI-A)^{-1}B+D$ se obtiene
+\begin{equation}H(s)=\frac{1}{s+h}=\frac{2}{2s+1}.\end{equation}
+Los polos $-a$ y $-\alpha$ no aparecen en $H(s)$: $Y$ no recibe la entrada y $z$ no realimenta a $T$. El sistema entrada-salida tiene polo $-0.5$, ganancia estática $H(0)=2$ y constante de tiempo 2 s. Las respuestas unitarias son
+\[
+y_{\rm esc}(t)=\frac1h(1-e^{-ht})=2(1-e^{-t/2}),\qquad
+y_{\rm imp}(t)=e^{-ht}=e^{-t/2}.
+\]
+\section{Experimentos numéricos}
+\subsection{Datos de las simulaciones}
+Los parámetros y condiciones iniciales son los de las Tablas 1 y 2. Se usan $N=5000$ puntos de salida en los intervalos 0--200 s y 0--1000 s, además de 0--8000 s para la dinámica lenta y 0--20 s para la condición lejana. El modelo linealizado se integra en desviaciones $\delta x_0=x_0-x_e$ y se reconstruye como $x=x_e+\delta x$.
+\begin{table}[H]\centering\caption{Parámetros del modelo.}\begin{tabular}{llll}\toprule Parámetro&Valor&Unidad\\\midrule $k_0$&$10^4$&s$^{-1}$\\$E_R$&5000&K\\$q$&100&K\\$h$&0.5&s$^{-1}$\\$T_a$&300&K\\$\alpha$&0.1&s$^{-1}$\\$\beta$&10&K/s\\\bottomrule\end{tabular}\end{table}
+\begin{table}[H]\centering\caption{Condiciones iniciales de las cinco simulaciones.}\begin{tabular}{lrrrrr}\toprule &CI 1&CI 2&CI 3&CI 4&CI 5\\\midrule $Y_0$&1&0.1&1&0.5&1\\$T_0$ [K]&300&301&350&300&300\\$z_0$ [K]&300&301&300&300&400\\\bottomrule\end{tabular}\end{table}
+\emergencystretch=2em Las simulaciones se hicieron en Python con \texttt{scipy.integrate.solve\_ivp}~\cite{SciPy}, método RK45 (Dormand--Prince, el mismo que usa \texttt{ode45} en MATLAB), con \texttt{rtol=1e-8} y \texttt{atol=1e-10}. Para el error entre modelos y el horizonte de 8000~s se usó LSODA con \texttt{rtol=1e-9}, y para la condición inicial lejana el método implícito Radau, adecuado para dinámicas rígidas. El equilibrio, el Jacobiano y $H(s)$ se calcularon simbólicamente con SymPy, los autovalores con NumPy y las respuestas al escalón y al impulso con \texttt{scipy.signal}.
+\subsection{Simulaciones no lineal y linealizada}
+Las Figuras 1--4 muestran diagramas de fase y soluciones temporales en los horizontes de 200 y 1000 s. En los diagramas, la estrella indica el inicio, el círculo el estado final y la X el equilibrio.
+\begin{figure}[H]\centering\includegraphics[width=.95\textwidth]{images/fig1.png}\caption{Diagramas de fase 3D, 0--200 s; no lineal y linealizado alrededor de $x_e=(0,300,300)$.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=.95\textwidth]{images/fig2.png}\caption{Soluciones temporales de $Y,T,z$, 0--200 s; no lineal y linealizado.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=.95\textwidth]{images/fig3.png}\caption{Diagramas de fase 3D, 0--1000 s; no lineal y linealizado.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=.95\textwidth]{images/fig4.png}\caption{Soluciones temporales de $Y,T,z$, 0--1000 s; no lineal y linealizado.}\end{figure}
+\subsection{Error entre modelos y tiempos largos}
+La Figura 5 presenta el error absoluto en escala logarítmica y la Figura 6 extiende la simulación a 8000 s.
+\begin{figure}[H]\centering\includegraphics[width=.8\textwidth]{images/fig5.png}\caption{Error absoluto $|x_{\rm no\ lineal}-x_{\rm linealizado}|$ de cada estado, 0--1000 s, en escala logarítmica. Los errores de la CI 1 y la CI 5 coinciden, por lo que la curva azul queda tapada por la violeta.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=.95\textwidth]{images/fig6.png}\caption{Soluciones temporales en 0--8000 s para CI 1, 3 y 4.}\end{figure}
+\subsection{Condición inicial lejana y respuesta}
+Para explorar el límite local se usa $(Y_0,T_0,z_0)=(1,600,300)$ K durante 20 s (Figura 7). La Figura 8 presenta las respuestas al escalón e impulso unitarios.
+\begin{figure}[H]\centering\includegraphics[width=.8\textwidth]{images/fig7.png}\caption{Condición inicial lejana $(1,600,300)$: no lineal y linealizado, 0--20 s.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=.8\textwidth]{images/fig8.png}\caption{Respuesta al escalón e impulso unitarios de $H(s)=2/(2s+1)$.}\end{figure}
+\section{Análisis y Discusión}
+En las Figuras~1--4 las trayectorias del modelo no lineal y del linealizado son prácticamente indistinguibles para las cinco condiciones iniciales. No se trata de un error de implementación: el equilibrio tiene $Y_e=0$ y la única no linealidad, $k(T)Y$, está multiplicada por $Y$. Al linealizar, $k(T)$ se congela en $k(T_a)=a$ y el error que se comete, $-[k(T)-a]Y$, es pequeño mientras $T$ no se aleje mucho de $T_a$ o $Y$ sea pequeña. Además, $T$ regresa a $T_a$ con una constante de tiempo de 2~s, por lo que sus apartamientos duran poco (en la CI~3, con $T_0=350$~K, $T$ llega a unos 300~K en alrededor de 10~s).
+El comportamiento de cada estado es el que anticipan los autovalores. $Y$ decae lentamente: en la CI~1 pasa de 1 a 0.89 en 200~s y a 0.56 en 1000~s, de acuerdo con $\e^{-t/1731}$. $T$ queda cuasi estacionaria en $T\approx T_a+qaY/h\approx300.1$~K. La variable $z$ tiende a $T+(\beta/\alpha)Y\approx300+100Y$, por lo que sube hasta $\approx397$~K a los 52~s en la CI~1 y después decae al ritmo de $Y$. La CI~5, con $z_0=400$~K, arranca justo sobre esa curva y por eso solo decae junto con $Y$.
+La escala logarítmica de la Figura~5 muestra una diferencia que a simple vista no se aprecia. El Cuadro~\ref{tab:err} resume los errores máximos en 0--1000~s. Las CI~1, 2, 4 y 5, que parten de $T_0\approx300$~K, tienen errores máximos de a lo sumo $1.6\cdot10^{-3}$ en $Y$, $7.3\cdot10^{-4}$~K en $T$ y $0.16$~K en $z$. La CI~3 es la única con una diferencia apreciable, porque $k(350)\approx10.8\,k(300)$, pero aun así queda por debajo del 1\,\% del rango de cada estado. Los errores de la CI~1 y la CI~5 son idénticos: $z$ no realimenta a $Y$ ni a $T$, y su ecuación es lineal en ambos modelos. El error en $T$ decrece cuando $T$ vuelve a $T_a$, mientras que los de $Y$ y $z$ permanecen o crecen lentamente, porque el reactivo consumido de más durante el transitorio no se recupera.
+\begin{table}[H]\centering\caption{Errores máximos $|x_{\rm no\ lineal}-x_{\rm linealizado}|$ en 0--1000 s.}\label{tab:err}
+\begin{tabular}{lrrrrr}\toprule
+&CI 1&CI 2&CI 3&CI 4&CI 5\\\midrule
+$\max|\Delta Y|$&$1.59\cdot10^{-3}$&$1.94\cdot10^{-5}$&$6.51\cdot10^{-3}$&$3.96\cdot10^{-4}$&$1.59\cdot10^{-3}$\\
+$\max|\Delta T|$ [K]&$7.30\cdot10^{-4}$&$2.42\cdot10^{-4}$&$0.284$&$1.82\cdot10^{-4}$&$7.30\cdot10^{-4}$\\
+$\max|\Delta z|$ [K]&$0.158$&$1.94\cdot10^{-3}$&$0.650$&$0.0395$&$0.158$\\\bottomrule
+\end{tabular}\end{table}
+En la Figura~6 ambos modelos convergen a $x_e$, como predicen los autovalores negativos. A 8000~s, en la CI~1, $x_{\rm NL}\approx(9.77\cdot10^{-3},300.00113,300.98369)$ y $x_{\rm lin}\approx(9.83\cdot10^{-3},300.00114,300.98997)$; $z$ todavía vale $\approx301$~K porque sigue a $300+100Y$. Los 1000~s de las Figuras~3 y~4 equivalen a $\approx0.6\,\tau_1$, con $\tau_1\approx1731$~s, por lo que el equilibrio recién se alcanza dentro del horizonte de 8000~s.
+Con $T_0=600$~K, $k(600)\approx2.4\ {\rm s}^{-1}$, unas $4\cdot10^{3}$ veces $a$, y el modelo linealizado deja de ser válido (Figura~7). En el modelo no lineal, $Y$ cae por debajo de 0.1 en 1.24~s y el calor liberado hace que $T$ suba hasta 610.3~K a los 0.22~s, en lugar de enfriarse de forma monótona; luego $T$ vuelve a 300~K, la reacción se congela con $Y\approx0.07$ y sigue la dinámica lenta. En el linealizado $k$ queda fija en $a$: $Y$ casi no cambia (0.989 a los 20~s), $T$ solo decae exponencialmente y $z(20)=396.1$~K frente a 319.9~K del no lineal. Con $T_0=500$~K también hay diferencia ($Y(20)=0.713$ contra 0.989). Esto ilustra que el método indirecto de Lyapunov es local: garantiza la estabilidad solo en un entorno de $x_e$ y el modelo linealizado no reproduce la cinética de Arrhenius.
+La función de transferencia $H(s)=2/(2s+1)$ es de primer orden y estable, aunque el sistema es de orden 3: los polos $-a$ y $-\alpha$ no aparecen porque $Y$ no recibe la entrada y $z$ no realimenta a $T$. La respuesta al escalón (Figura~8) crece de 0 a 2~K con constante de tiempo de 2~s (95\,\% a los 6~s), porque en régimen permanente $u=h\,\delta T$: un aporte constante de 1~K/s eleva la temperatura 2~K por encima de $T_a$. La respuesta al impulso parte de 1 y decae como $\e^{-t/2}$.
+\section{Conclusiones}
+El modelo de combustión tiene un único equilibrio, $x_e=(0,300,300)$ K, con el reactivo agotado y el sistema en equilibrio térmico con el ambiente. El Jacobiano allí es triangular inferior y sus autovalores, $-5.78\cdot10^{-4}$, $-0.5$ y $-0.1\ {\rm s}^{-1}$, son reales y negativos: el equilibrio es localmente asintóticamente estable, con una combustión lenta ($\tau\approx1731$~s) frente a una dinámica térmica rápida (2~s y 10~s). Las simulaciones de 8000~s lo confirman.
+Para condiciones iniciales cercanas a $T_a$ el modelo linealizado reproduce al no lineal con diferencias menores al 1\,\% del rango de cada estado, porque la no linealidad está multiplicada por $Y$, que se anula en el equilibrio, y porque $T$ regresa rápido a $T_a$. La linealización es local: falla cuando la temperatura inicial se aleja mucho de $T_a$ (por ejemplo, $T_0\ge500$~K), donde domina la dependencia exponencial de Arrhenius. Con una entrada térmica se obtuvo una función de transferencia de primer orden, $H(s)=2/(2s+1)$, con ganancia estática 2 y constante de tiempo de 2~s.
+\begin{thebibliography}{9}
+\bibitem{Catedra} Cátedra de Modelos y Sistemas, \textit{Enunciado del Trabajo Final: modelo reducido de combustión}, ECyT, UNSAM (2026).
+\bibitem{Khalil} H. K. Khalil, \textit{Nonlinear Systems}, 3.ª ed., Prentice Hall (2002), cap. 4.
+\bibitem{Ogata} K. Ogata, \textit{Ingeniería de Control Moderna}, 5.ª ed., Pearson (2010).
+\bibitem{SciPy} P. Virtanen et al., “SciPy 1.0: fundamental algorithms for scientific computing in Python,” \textit{Nature Methods}, 17 (2020), pp. 261--272.
+\end{thebibliography}
+\end{document}
